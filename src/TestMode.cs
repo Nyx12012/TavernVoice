@@ -44,6 +44,7 @@ namespace TavernVoice
         private static NameBoard board;
 
         internal static byte? ForcedFlags { get; private set; }
+        internal static string BoardName { get; private set; } = PeerName;
 
         internal static string Folder
         {
@@ -167,9 +168,10 @@ namespace TavernVoice
                 }
                 if (boardText != "off")
                 {
+                    BoardName = boardText.Length == 0 || boardText == "on" ? PeerName : boardText;
                     board = GlobalSettings<NameBoardsSettings>.Instance.NameBoardDefinition.Get() as NameBoard;
-                    board?.Setup(PeerName, false);
-                    MelonLogger.Msg($"TVTEST name board for {PeerName} {(board != null ? "shown" : "failed")}");
+                    board?.Setup(BoardName, false);
+                    MelonLogger.Msg($"TVTEST name board for {BoardName} {(board != null ? "shown" : "failed")}");
                 }
             }
         }

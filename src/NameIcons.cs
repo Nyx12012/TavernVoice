@@ -18,6 +18,7 @@ namespace TavernVoice
         internal static float Scale { get; private set; }
         internal static Quaternion Facing { get; private set; } = Quaternion.identity;
         internal static Vector3 Center { get; private set; }
+        internal static float HalfWidth { get; private set; }
         internal static Material Speaking { get; private set; }
         internal static Material Light { get; private set; }
         internal static Material Dim { get; private set; }
@@ -55,7 +56,7 @@ namespace TavernVoice
             foreach (Alta.Networking.Scripts.Player.IPlayer player in Player.AllPlayers)
                 if (player.UserInfo != null && player.UserInfo.Username == userName)
                     return player.UserInfo.Identifier;
-            return TestMode.Active && userName == TestMode.PeerName ? TestMode.PeerSender : 0;
+            return TestMode.Active && (userName == TestMode.PeerName || userName == TestMode.BoardName) ? TestMode.PeerSender : 0;
         }
 
         private static bool Load()
@@ -98,6 +99,7 @@ namespace TavernVoice
                 }
                 Scale = IconHeight / Mathf.Max(0.0001f, size.y);
                 Center = Facing * bounds.center * Scale;
+                HalfWidth = Mathf.Max(WidthOf(Body) * (1f + VoiceIcon.MaxPulse), WidthOf(Slash) * VoiceIcon.SlashScale) * Scale * 0.5f;
                 Speaking = Tinted(baseMaterial, new Color(0.35f, 0.95f, 0.45f));
                 Light = Tinted(baseMaterial, new Color(0.9f, 0.9f, 0.9f));
                 Dim = Tinted(baseMaterial, new Color(0.4f, 0.4f, 0.4f));
@@ -115,6 +117,8 @@ namespace TavernVoice
             return false;
         }
 
+        private static float WidthOf(Mesh mesh) => Mathf.Abs((Facing * mesh.bounds.size).x);
+
         private static Material Tinted(Material source, Color color)
         {
             Shader flat = Shader.Find("Unlit/Color");
@@ -127,7 +131,9 @@ namespace TavernVoice
 
     internal sealed class VoiceIcon : MonoBehaviour
     {
-        private const float Gap = 0.12f;
+        internal const float SlashScale = 1.5f;
+        private const float Gap = 0.04f;
+        internal const float MaxPulse = 0.25f;
         private int userId;
         private TextRenderer nameText;
         private Transform root;
@@ -165,7 +171,7 @@ namespace TavernVoice
             icon.localPosition = -NameIcons.Center;
             icon.localScale = Vector3.one * NameIcons.Scale;
             body = Part(icon, "Body", NameIcons.Body, 1f, layer, out bodyRenderer);
-            Part(icon, "Slash", NameIcons.Slash, 1.5f, layer, out slashRenderer);
+            Part(icon, "Slash", NameIcons.Slash, SlashScale, layer, out slashRenderer);
         }
 
         private static Transform Part(Transform parent, string name, Mesh mesh, float scale, int layer, out MeshRenderer renderer)
@@ -198,11 +204,22 @@ namespace TavernVoice
             }
             if (icon == StatusIcon.None)
                 return;
-            float half = nameText != null ? nameText.CurrentLineWidth * 0.5f : 0.5f;
-            Vector3 at = nameText != null ? nameText.transform.localPosition : Vector3.zero;
-            root.localPosition = new Vector3(-(half + Gap), at.y + 0.1f, at.z);
-            float pulse = icon == StatusIcon.Speaking ? 1f + 0.25f * Mathf.Clamp01(VoiceRuntime.GetAudioEnergy(userId) * 4f) : 1f;
+            Vector3 end = NameEnd();
+            root.localPosition = new Vector3(end.x - (Gap + NameIcons.HalfWidth), end.y, end.z);
+            float pulse = icon == StatusIcon.Speaking ? 1f + MaxPulse * Mathf.Clamp01(VoiceRuntime.GetAudioEnergy(userId) * 4f) : 1f;
             body.localScale = Vector3.one * pulse;
+        }
+
+        private Vector3 NameEnd()
+        {
+            if (nameText == null)
+                return new Vector3(-0.5f, 0f, 0f);
+            Vector2 center = nameText.CurrentCenter;
+            float half = nameText.CurrentLineWidthScaled * 0.5f;
+            Transform text = nameText.transform;
+            Vector3 first = transform.InverseTransformPoint(text.TransformPoint(new Vector3(center.x - half, center.y, 0f)));
+            Vector3 second = transform.InverseTransformPoint(text.TransformPoint(new Vector3(center.x + half, center.y, 0f)));
+            return first.x < second.x ? first : second;
         }
     }
 }
