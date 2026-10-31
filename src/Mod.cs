@@ -11,7 +11,7 @@ namespace TavernVoice
 {
     public sealed class Mod : MelonMod
     {
-        public const string Version = "2.0.1";
+        public const string Version = "2.0.2";
         private VoiceSettingsGui settingsGui;
         private bool off;
         private bool server;

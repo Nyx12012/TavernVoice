@@ -38,7 +38,9 @@ namespace TavernVoice
         internal static void Load()
         {
             MelonPreferences_Category c = category = MelonPreferences.CreateCategory("TavernVoice");
-            relayPort = c.CreateEntry("RelayPort", 1770, description: "Server: UDP port of the voice relay. Players need it open (forwarded) to get lag proof voice.");
+            relayPort = c.CreateEntry("RelayPort", 1759, description: "Server: UDP port of the voice relay. Players need it open (forwarded) to get lag proof voice.");
+            if (relayPort.Value == 1770)
+                relayPort.Value = 1759;
             relayEnabled = c.CreateEntry("RelayEnabled", true, description: "Server: start the voice relay next to the server.");
             rangeMeters = c.CreateEntry("RangeMeters", 50f, description: "Server: how far a voice carries, in meters.");
             positionRateHz = c.CreateEntry("PositionRateHz", 4, description: "Server: how often player positions go to the relay.");

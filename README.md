@@ -18,8 +18,9 @@ Remove `Mods/CircuitsVoiceChat*.dll` first. TavernVoice stays off while it is th
 
 ## Hosting
 
-Open UDP port 1770 on the server (a router forward at home, a firewall rule on a VPS). On Windows the
-firewall asks once about `TavernVoiceRelay.exe`. Until the port is open, voice still works through
+Open UDP port 1759 on the server (a router forward at home, a firewall rule on a VPS). It is part of
+the 1757 to 1762 range that TavernLauncher's server guide forwards. On Windows the firewall asks once
+about `TavernVoiceRelay.exe`. Until the port is open, voice still works through
 the game connection, just not lag proof.
 
 Settings are in `UserData/MelonPreferences.cfg` under `[TavernVoice]`: `RelayPort`, `RelayEnabled`,
@@ -35,7 +36,7 @@ The server console changes them too, and saves them:
 | `tavernvoice fallback on` or `off` | voice over the game connection for players who can't reach the relay |
 | `tavernvoice rate 4` | how many times a second positions go to the relay |
 
-`RelayPort` is only read at start.
+`RelayPort` is only read at start. A server still set to 1770, the default before 2.0.2, moves to 1759.
 
 ## Playing
 
