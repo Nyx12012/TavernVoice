@@ -1,0 +1,7 @@
+bin/
+obj/
+tests/StyleCheck/bin/
+tests/StyleCheck/obj/
+tests/RulesTest/bin/
+tests/RulesTest/obj/
+relay/build/

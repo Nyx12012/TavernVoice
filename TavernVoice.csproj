@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>TavernVoice</AssemblyName>
+    <RootNamespace>TavernVoice</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DebugType>none</DebugType>
+    <GamePath Condition="'$(GamePath)' == ''">C:\Games\Alta\A Township Tale</GamePath>
+    <ManagedPath>$(GamePath)\A Township Tale_Data\Managed</ManagedPath>
+    <RelayExe>relay\build\TavernVoiceRelay.exe</RelayExe>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src\*.cs" />
+    <Reference Include="Concentus"><HintPath>$(GamePath)\UserLibs\Concentus.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="MelonLoader"><HintPath>$(GamePath)\MelonLoader\net35\MelonLoader.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(GamePath)\MelonLoader\net35\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Root.Township"><HintPath>$(ManagedPath)\Root.Township.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Alta.Serialization.Runtime"><HintPath>$(ManagedPath)\Alta.Serialization.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Alta.Global.Runtime"><HintPath>$(ManagedPath)\Alta.Global.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Alta.CommandLine"><HintPath>$(ManagedPath)\Alta.CommandLine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="kcp2k"><HintPath>$(ManagedPath)\kcp2k.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Alta.Singletons"><HintPath>$(ManagedPath)\Alta.Singletons.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(ManagedPath)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.AudioModule"><HintPath>$(ManagedPath)\UnityEngine.AudioModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.AnimationModule"><HintPath>$(ManagedPath)\UnityEngine.AnimationModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule"><HintPath>$(ManagedPath)\UnityEngine.JSONSerializeModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.InputSystem"><HintPath>$(ManagedPath)\Unity.InputSystem.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.IMGUIModule"><HintPath>$(ManagedPath)\UnityEngine.IMGUIModule.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="src\ModAudio.bnk" LogicalName="TavernVoice.ModAudio.bnk" />
+    <EmbeddedResource Include="$(RelayExe)" LogicalName="TavernVoice.TavernVoiceRelay.exe" />
+  </ItemGroup>
+</Project>
