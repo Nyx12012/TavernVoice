@@ -15,6 +15,7 @@ namespace TavernVoice
         private static MelonPreferences_Entry<float> rangeMeters;
         private static MelonPreferences_Entry<int> positionRateHz;
         private static MelonPreferences_Entry<bool> inGameFallback;
+        private static MelonPreferences_Entry<bool> cvcBridge;
         private static MelonPreferences_Entry<bool> forceInGame;
 
         internal static int RelayPort => Math.Max(1, Math.Min(65535, relayPort.Value));
@@ -22,12 +23,14 @@ namespace TavernVoice
         internal static float RangeMeters => Math.Max(1f, rangeMeters.Value);
         internal static int PositionRateHz => Math.Max(1, Math.Min(20, positionRateHz.Value));
         internal static bool InGameFallback => inGameFallback.Value;
+        internal static bool CvcBridge => cvcBridge.Value;
         internal static bool ForceInGame => forceInGame.Value;
 
         internal static void SetRelayEnabled(bool value) => Save(relayEnabled, value);
         internal static void SetRangeMeters(float value) => Save(rangeMeters, value);
         internal static void SetPositionRateHz(int value) => Save(positionRateHz, value);
         internal static void SetInGameFallback(bool value) => Save(inGameFallback, value);
+        internal static void SetCvcBridge(bool value) => Save(cvcBridge, value);
 
         private static void Save<T>(MelonPreferences_Entry<T> entry, T value)
         {
@@ -45,6 +48,7 @@ namespace TavernVoice
             rangeMeters = c.CreateEntry("RangeMeters", 50f, description: "Server: how far a voice carries, in meters.");
             positionRateHz = c.CreateEntry("PositionRateHz", 4, description: "Server: how often player positions go to the relay.");
             inGameFallback = c.CreateEntry("InGameFallback", true, description: "Server: carry voice over the game connection for players who can't reach the relay.");
+            cvcBridge = c.CreateEntry("CvcBridge", true, description: "Server: let players still on Circuit's Voice Chat talk with TavernVoice players, through the game connection.");
             forceInGame = c.CreateEntry("ForceInGame", false, description: "Client: never use the relay (for testing).");
             c.SaveToFile(false);
         }

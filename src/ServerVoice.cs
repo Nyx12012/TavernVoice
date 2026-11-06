@@ -25,6 +25,7 @@ namespace TavernVoice
         internal uint Tag;
         internal int SenderId;
         internal bool Fallback;
+        internal bool Cvc;
         internal byte ClientFlags;
         internal Vector3? Anchor;
         internal bool AnchorEntered;
@@ -128,6 +129,7 @@ namespace TavernVoice
                 return;
             ResolveChannels();
             connection.SetHandler((MessageType)Wire.GameMessage, Receive);
+            connection.SetHandler((MessageType)Wire.CvcMessage, ReceiveCvc);
             connection.Disconnected += Disconnected;
         }
 
@@ -344,6 +346,8 @@ namespace TavernVoice
             List<Wire.StatusEntry> list = StatusList();
             foreach (Session s in byConnection.Values)
             {
+                if (s.Cvc)
+                    continue;
                 try
                 {
                     s.Connection.Send(reliableChannel, (MessageType)Wire.GameMessage, (_, stream) =>
@@ -382,6 +386,8 @@ namespace TavernVoice
         {
             foreach (Session s in byConnection.Values)
             {
+                if (s.Cvc)
+                    continue;
                 try
                 {
                     SendSession(s);
@@ -395,18 +401,78 @@ namespace TavernVoice
 
         internal static void SendVoiceDown(Session recipient, VoicePacket packet)
         {
-            recipient.Connection.Send(voiceChannel, (MessageType)Wire.GameMessage, (_, stream) =>
+            if (recipient.Cvc)
             {
-                Wire.WriteSubtype(stream, Wire.GameVoiceDownMessage);
-                VoiceProtocol.WriteServer(stream, packet);
-            });
+                recipient.Connection.Send(voiceChannel, (MessageType)Wire.CvcMessage, (_, stream) => VoiceProtocol.WriteServer(stream, packet));
+            }
+            else
+            {
+                recipient.Connection.Send(voiceChannel, (MessageType)Wire.GameMessage, (_, stream) =>
+                {
+                    Wire.WriteSubtype(stream, Wire.GameVoiceDownMessage);
+                    VoiceProtocol.WriteServer(stream, packet);
+                });
+            }
             ChannelFlush.Flush(recipient.Connection, voiceChannel);
+        }
+
+        private static void ReceiveCvc(Connection connection, AltaStream stream)
+        {
+            if (!Settings.CvcBridge)
+                return;
+            VoicePacket packet;
+            try
+            {
+                packet = VoiceProtocol.ReadClient(stream);
+            }
+            catch
+            {
+                VoiceDiagnostics.InvalidDrop();
+                return;
+            }
+            try
+            {
+                byConnection.TryGetValue(connection, out Session session);
+                if (session == null && connection.Player is Player player)
+                    session = Open(connection, player);
+                if (session == null)
+                    return;
+                SetCvc(session, true);
+                if (Settings.InGameFallback)
+                    InGameRelay.FromClient(session, packet);
+            }
+            catch (Exception exception)
+            {
+                MelonLogger.Warning($"Voice from a Circuit's Voice Chat player failed: {exception.Message}");
+            }
+        }
+
+        private static void SetCvc(Session session, bool on)
+        {
+            if (session.Cvc == on)
+                return;
+            session.Cvc = on;
+            session.Fallback = on;
+            MelonLogger.Msg($"Player {session.SenderId} {(on ? "is on Circuit's Voice Chat: voice bridged through the game connection" : "is off the Circuit's Voice Chat bridge")}");
+            RelayHost.TapListChanged();
+            statusDirty = true;
+        }
+
+        internal static void SetCvcBridge(bool on)
+        {
+            Settings.SetCvcBridge(on);
+            if (on)
+                return;
+            foreach (Session s in byConnection.Values.ToList())
+                SetCvc(s, false);
         }
 
         private static void Receive(Connection connection, AltaStream stream)
         {
             int subtype = Wire.ReadSubtype(stream);
             byConnection.TryGetValue(connection, out Session session);
+            if (session != null && (subtype == Wire.GameVoiceUpMessage || subtype == Wire.ModeMessage || subtype == Wire.StateMessage))
+                SetCvc(session, false);
             switch (subtype)
             {
                 case Wire.SessionRequestMessage:
@@ -488,13 +554,13 @@ namespace TavernVoice
                 text.Append("relay stopped (a newer relay took the port, or it failed to start)");
             else
                 text.Append($"relay on UDP {Settings.RelayPort}, {(RelayHost.Listening ? "listening" : "not listening yet")}, started {RelayHost.Starts} time(s)");
-            text.Append($"\nrange {Settings.RangeMeters:0.#} m, positions {Settings.PositionRateHz} Hz, in-game fallback {(Settings.InGameFallback ? "on" : "off")}");
+            text.Append($"\nrange {Settings.RangeMeters:0.#} m, positions {Settings.PositionRateHz} Hz, in-game fallback {(Settings.InGameFallback ? "on" : "off")}, Circuit's Voice Chat bridge {(Settings.CvcBridge ? "on" : "off")}");
             text.Append($"\nin-game voice: {SpurtCheck.Accepted} passed ({SpurtCheck.Late} late), {SpurtCheck.BucketDrops} over limit, {SpurtCheck.OrderDrops} out of order");
             text.Append($"\n{byConnection.Count} player(s) with voice");
             foreach (Session s in byConnection.Values)
             {
                 string name = s.Player != null ? s.Player.UserInfo.Username : "?";
-                text.Append($"\n  {name} ({s.SenderId}): {(s.Fallback ? "in-game" : "relay")}");
+                text.Append($"\n  {name} ({s.SenderId}): {(s.Cvc ? "Circuit's Voice Chat" : s.Fallback ? "in-game" : "relay")}");
                 if ((s.ClientFlags & Wire.FlagMuted) != 0)
                     text.Append(", muted");
                 if ((s.ClientFlags & Wire.FlagNoMic) != 0)

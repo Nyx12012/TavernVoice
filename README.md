@@ -16,6 +16,10 @@ Two files, on the server and on every player's PC:
 
 Remove `Mods/CircuitsVoiceChat*.dll` first. TavernVoice stays off while it is there.
 
+Players still on Circuit's Voice Chat can talk with TavernVoice players on a server that runs this.
+Their voice goes through the game connection, so it still stalls when the server lags. A TavernVoice
+player has no voice on a server still on Circuit's Voice Chat.
+
 ## Hosting
 
 Open UDP port 1759 on the server (a router forward at home, a firewall rule on a VPS). It is part of
@@ -24,7 +28,7 @@ about `TavernVoiceRelay.exe`. Until the port is open, voice still works through
 the game connection, just not lag proof.
 
 Settings are in `UserData/MelonPreferences.cfg` under `[TavernVoice]`: `RelayPort`, `RelayEnabled`,
-`RangeMeters`, `PositionRateHz`, `InGameFallback`.
+`RangeMeters`, `PositionRateHz`, `InGameFallback`, `CvcBridge`.
 
 The server console changes them too, and saves them:
 
@@ -34,6 +38,7 @@ The server console changes them too, and saves them:
 | `tavernvoice range 50` | how far a voice carries, in meters |
 | `tavernvoice relay on` or `off` | off sends all voice through the game connection |
 | `tavernvoice fallback on` or `off` | voice over the game connection for players who can't reach the relay |
+| `tavernvoice cvc on` or `off` | the bridge for players still on Circuit's Voice Chat (on by default) |
 | `tavernvoice rate 4` | how many times a second positions go to the relay |
 
 `RelayPort` is only read at start. A server still set to 1770, the default before 2.0.2, moves to 1759.

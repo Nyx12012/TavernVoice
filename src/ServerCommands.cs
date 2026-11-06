@@ -51,6 +51,15 @@ namespace TavernVoice
             return on ? "In-game fallback on (saved)" : "In-game fallback off (saved). Players who can't reach the relay have no voice.";
         }
 
+        [Command("cvc", "Turns the bridge for players still on Circuit's Voice Chat on or off")]
+        private static string Cvc(string value)
+        {
+            if (!TryOnOff(value, out bool on))
+                return "Use: tavernvoice cvc on, or tavernvoice cvc off";
+            ServerVoice.SetCvcBridge(on);
+            return on ? "Circuit's Voice Chat bridge on (saved). Those players talk through the game connection." : "Circuit's Voice Chat bridge off (saved). Those players have no voice.";
+        }
+
         [Command("rate", "Sets how many times a second player positions go to the relay (1 to 20)")]
         private static string Rate(int hz)
         {

@@ -22,6 +22,7 @@ namespace TavernVoice
         internal const byte Range = 21;
 
         internal const int GameMessage = 36;
+        internal const int CvcMessage = 30;
         internal const int SessionMessage = 0;
         internal const int SessionRequestMessage = 1;
         internal const int GameVoiceUpMessage = 2;
